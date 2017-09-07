@@ -47,10 +47,10 @@ import java.util.Set;
 public class ResourceValidator {
 
     // TODO: Locate URL under fabric8 repositories
-    private final static String jsonSchemaPath = "https://raw.githubusercontent.com/garethr/%s-json-schema/master/%s-standalone/%s.json";
+    private static final String JSON_SCHEMA_PATH = "https://raw.githubusercontent.com/garethr/%s-json-schema/master/%s-standalone/%s.json";
 
     private Logger log;
-    private File resources[];
+    private File[] resources;
     private ResourceClassifier target = ResourceClassifier.KUBERNETES;
     private List<IgnoreRule> ignorePaths = new ArrayList<>();
 
@@ -101,7 +101,7 @@ public class ResourceValidator {
      * @throws ConstraintViolationException
      * @throws IOException
      */
-    public int validate() throws ConstraintViolationException, IOException {
+    public int validate() throws IOException {
         for (File resource : resources) {
             if (resource.isFile() && resource.exists()) {
                 log.info("validating %s resource", resource.toString());
@@ -123,7 +123,7 @@ public class ResourceValidator {
                 constraintViolations.add(new ConstraintViolationImpl(errorMsg));
         }
 
-        if(constraintViolations.size() > 0) {
+        if(!constraintViolations.isEmpty()) {
             throw new ConstraintViolationException(getErrorMessage(resource, constraintViolations), constraintViolations);
         }
     }
@@ -157,7 +157,7 @@ public class ResourceValidator {
     }
 
     private String prepareSchemaUrl(JsonNode resourceNode) {
-        return String.format(jsonSchemaPath, target, "master", resourceNode.get("kind").toString().toLowerCase()).replace("\"", "");
+        return String.format(JSON_SCHEMA_PATH, target, "master", resourceNode.get("kind").toString().toLowerCase()).replace("\"", "");
     }
 
     private JsonNode geFileContent(File file) throws IOException {
