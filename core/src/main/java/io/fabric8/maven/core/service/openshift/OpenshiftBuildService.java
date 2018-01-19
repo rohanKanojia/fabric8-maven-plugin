@@ -109,6 +109,7 @@ public class OpenshiftBuildService implements BuildService {
         } catch (Fabric8ServiceException e) {
             throw e;
         } catch (Exception ex) {
+            log.error("Problem in builing image , stacktrace : ", ex);
             throw new Fabric8ServiceException("Unable to build the image using the OpenShift build service", ex);
         }
     }
