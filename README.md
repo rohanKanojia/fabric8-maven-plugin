@@ -124,3 +124,4 @@ The full documentation can be found in the [User Manual](http://maven.fabric8.io
 
 > This is a complete rewrite of the former fabric8-maven plugin. It does not share the same configuration syntax,
 > but migration should be straight forward - please use the [fabric8:migrate goal from 2.x of the plugin](http://fabric8.io/guide/mavenFabric8Migrate.html).
+socketTimeoutExceptionTests40
