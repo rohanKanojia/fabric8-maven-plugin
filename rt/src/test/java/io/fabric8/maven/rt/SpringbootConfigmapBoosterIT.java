@@ -21,6 +21,7 @@ import okhttp3.Response;
 import org.eclipse.jgit.lib.Repository;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -58,6 +59,7 @@ public class SpringbootConfigmapBoosterIT extends BaseBoosterIT {
     }
 
     @Test
+    @Ignore
     public void redeploy_springboot_app() throws Exception {
         Repository testRepository = setupSampleTestRepository(SPRING_BOOT_CONFIGMAP_BOOSTER_GIT, RELATIVE_POM_PATH);
 
