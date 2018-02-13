@@ -35,7 +35,7 @@ public class SpringbootHttpBoosterIT extends BaseBoosterIT {
 
     private final String FMP_CONFIGURATION_FILE = "/fmp-plugin-config.xml";
 
-    private final String EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL = "fabric8:deploy", EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE = "openshift";
+    private final String EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL = "fabric8:deploy -Dfabric8.openshift.trimImageInContainerSpec=true", EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE = "openshift";
 
     private final String RELATIVE_POM_PATH = "/pom.xml";
 

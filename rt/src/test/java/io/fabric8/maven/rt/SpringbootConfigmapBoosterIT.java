@@ -21,6 +21,7 @@ import okhttp3.Response;
 import org.eclipse.jgit.lib.Repository;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class SpringbootConfigmapBoosterIT extends BaseBoosterIT {
 
     private final String TESTSUITE_CONFIGMAP_NAME = "app-config";
 
-    private final String EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL = "fabric8:deploy -DskipTests", EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE = "openshift";
+    private final String EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL = "fabric8:deploy -Dfabric8.openshift.trimImageInContainerSpec=true -DskipTests", EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE = "openshift";
 
     private final String TEST_ENDPOINT = "/api/greeting";
 
@@ -58,6 +59,7 @@ public class SpringbootConfigmapBoosterIT extends BaseBoosterIT {
     }
 
     @Test
+    @Ignore
     public void redeploy_springboot_app() throws Exception {
         Repository testRepository = setupSampleTestRepository(SPRING_BOOT_CONFIGMAP_BOOSTER_GIT, RELATIVE_POM_PATH);
 
