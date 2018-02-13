@@ -28,7 +28,6 @@ import static io.fabric8.kubernetes.assertions.Assertions.assertThat;
 /**
  * Created by hshinde on 11/23/17.
  */
-@Ignore
 public class SpringbootHttpBoosterIT extends BaseBoosterIT {
 
     private final String SPRING_BOOT_HTTP_BOOSTER_GIT = "https://github.com/snowdrop/spring-boot-http-booster.git";
