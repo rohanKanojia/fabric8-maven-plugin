@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import static io.fabric8.kubernetes.assertions.Assertions.assertThat;
 
-@Ignore
 public class VertxHealthchecksBooster extends BaseBoosterIT {
     private final String SPRING_BOOT_HTTP_BOOSTER_GIT = "https://github.com/openshiftio-vertx-boosters/vertx-health-checks-booster.git";
 

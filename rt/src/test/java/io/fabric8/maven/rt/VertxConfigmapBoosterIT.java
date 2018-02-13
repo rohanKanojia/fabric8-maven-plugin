@@ -22,6 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.lib.Repository;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -31,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import static io.fabric8.kubernetes.assertions.Assertions.assertThat;
 
+@Ignore
 public class VertxConfigmapBoosterIT extends BaseBoosterIT {
     private final String SPRING_BOOT_CONFIGMAP_BOOSTER_GIT = "https://github.com/openshiftio-vertx-boosters/vertx-configmap-booster.git";
 
