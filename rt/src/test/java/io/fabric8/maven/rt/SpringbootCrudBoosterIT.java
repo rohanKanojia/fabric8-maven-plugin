@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import static io.fabric8.kubernetes.assertions.Assertions.assertThat;
 
-@Ignore
 public class SpringbootCrudBoosterIT extends BaseBoosterIT {
     private final String SPRING_BOOT_CRUD_BOOSTER_GIT = "https://github.com/snowdrop/spring-boot-crud-booster.git";
 
