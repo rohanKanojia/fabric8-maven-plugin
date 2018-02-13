@@ -35,7 +35,7 @@ public class SpringbootConfigmapBoosterIT extends BaseBoosterIT {
 
     private final String TESTSUITE_CONFIGMAP_NAME = "app-config";
 
-    private final String EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL = "fabric8:deploy -DskipTests", EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE = "openshift";
+    private final String EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL = "fabric8:deploy -Dfabric8.openshift.trimImageInContainerSpec=true -DskipTests", EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE = "openshift";
 
     private final String TEST_ENDPOINT = "/api/greeting";
 
