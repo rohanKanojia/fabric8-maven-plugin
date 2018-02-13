@@ -23,6 +23,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.Ignore;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -30,6 +31,7 @@ import java.util.logging.Level;
 
 import static io.fabric8.kubernetes.assertions.Assertions.assertThat;
 
+@Ignore
 public class VertxHttpBoosterIT extends BaseBoosterIT {
     private final String SPRING_BOOT_HTTP_BOOSTER_GIT = "https://github.com/openshiftio-vertx-boosters/vertx-http-booster.git";
 
