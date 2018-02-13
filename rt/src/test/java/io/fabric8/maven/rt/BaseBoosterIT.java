@@ -377,11 +377,11 @@ public class BaseBoosterIT {
 
         int nPolls = 0;
         // Keep polling till 5 minutes
-        while (nPolls < 60) {
+        while (nPolls < 120) {
             PodList podList = openShiftClient.pods().withLabel("app", testsuiteRepositoryArtifactId).list();
             for (Pod pod : podList.getItems()) {
-                logger.info("waitTillApplicationPodStarts(" + key + ", " + value + ") -> Pod : "
-                        + pod.getMetadata().getName() + ", STATUS : " + KubernetesHelper.getPodStatus(pod) + ", isPodReady : " + KubernetesHelper.isPodReady(pod));
+//                logger.info("waitTillApplicationPodStarts(" + key + ", " + value + ") -> Pod : "
+//                        + pod.getMetadata().getName() + ", STATUS : " + KubernetesHelper.getPodStatus(pod) + ", isPodReady : " + KubernetesHelper.isPodReady(pod));
 
                 if (pod.getMetadata().getAnnotations().containsKey(key)) {
                     logger.info(pod.getMetadata().getName() + " is redeployed pod.");
