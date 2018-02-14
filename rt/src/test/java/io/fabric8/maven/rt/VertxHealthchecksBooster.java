@@ -22,6 +22,7 @@ import org.apache.http.HttpStatus;
 import org.eclipse.jgit.lib.Repository;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.Ignore;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -38,6 +39,7 @@ public class VertxHealthchecksBooster extends BaseBoosterIT {
     private final String ANNOTATION_KEY = "vertx-healthcheck-testKey", ANNOTATION_VALUE = "vertx-healthcheck-testValue";
 
     @Test
+    @Ignore
     public void deploy_vertx_app_once() throws Exception {
         Repository testRepository = setupSampleTestRepository(SPRING_BOOT_HTTP_BOOSTER_GIT, RELATIVE_POM_PATH);
 
@@ -50,6 +52,7 @@ public class VertxHealthchecksBooster extends BaseBoosterIT {
     }
 
     @Test
+    @Ignore
     public void redeploy_vertx_app() throws Exception {
         Repository testRepository = setupSampleTestRepository(SPRING_BOOT_HTTP_BOOSTER_GIT, RELATIVE_POM_PATH);
 

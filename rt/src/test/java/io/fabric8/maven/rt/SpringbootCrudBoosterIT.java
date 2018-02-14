@@ -22,6 +22,7 @@ import org.apache.http.HttpStatus;
 import org.eclipse.jgit.lib.Repository;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -42,6 +43,7 @@ public class SpringbootCrudBoosterIT extends BaseBoosterIT {
     private final String ANNOTATION_KEY = "springboot-crud-testKey", ANNOTATION_VALUE = "springboot-crud-testValue";
 
     @Test
+    @Ignore
     public void deploy_springboot_app_once() throws Exception {
         Repository testRepository = setupSampleTestRepository(SPRING_BOOT_CRUD_BOOSTER_GIT, RELATIVE_POM_PATH);
         deployDatabaseUsingCLI();
@@ -55,6 +57,7 @@ public class SpringbootCrudBoosterIT extends BaseBoosterIT {
     }
 
     @Test
+    @Ignore
     public void redeploy_springboot_app() throws Exception {
         Repository testRepository = setupSampleTestRepository(SPRING_BOOT_CRUD_BOOSTER_GIT, RELATIVE_POM_PATH);
         deployDatabaseUsingCLI();
