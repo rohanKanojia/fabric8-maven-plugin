@@ -46,8 +46,11 @@ public class SpringbootCrudBoosterIT extends BaseBoosterIT {
         Repository testRepository = setupSampleTestRepository(SPRING_BOOT_CRUD_BOOSTER_GIT, RELATIVE_POM_PATH);
         deployDatabaseUsingCLI();
 
+        addRedeploymentAnnotations(testRepository, RELATIVE_POM_PATH, "deploymentType", "deployOnce", fmpConfigurationFile);
+
         deploy(testRepository, EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL, EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE);
-        waitAfterDeployment(false);
+        waitTillApplicationPodStarts("deploymentType", "deployOnce");
+        TimeUnit.SECONDS.sleep(20);
         assertApplication();
     }
 

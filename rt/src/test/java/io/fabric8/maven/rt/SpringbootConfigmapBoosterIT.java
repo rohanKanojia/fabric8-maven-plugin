@@ -21,7 +21,6 @@ import okhttp3.Response;
 import org.eclipse.jgit.lib.Repository;
 import org.json.JSONObject;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -50,16 +49,17 @@ public class SpringbootConfigmapBoosterIT extends BaseBoosterIT {
 
         createViewRoleToServiceAccount();
         createConfigMapResourceForApp(TESTSUITE_CONFIGMAP_NAME, "greeting.message: Hello World from a ConfigMap!");
+        addRedeploymentAnnotations(testRepository, RELATIVE_POM_PATH, "deploymentType", "deployOnce", fmpConfigurationFile);
 
         deploy(testRepository, EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL, EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE);
-        waitAfterDeployment(false);
+        waitTillApplicationPodStarts("deploymentType", "deployOnce");
+        TimeUnit.SECONDS.sleep(20);
         assertApplication(false);
 
         openShiftClient.configMaps().inNamespace(testsuiteNamespace).withName(TESTSUITE_CONFIGMAP_NAME).delete();
     }
 
     @Test
-    @Ignore
     public void redeploy_springboot_app() throws Exception {
         Repository testRepository = setupSampleTestRepository(SPRING_BOOT_CONFIGMAP_BOOSTER_GIT, RELATIVE_POM_PATH);
 
