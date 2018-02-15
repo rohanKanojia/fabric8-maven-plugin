@@ -53,7 +53,7 @@ public class SpringbootConfigmapBoosterIT extends BaseBoosterIT {
 
         deploy(testRepository, EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL, EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE);
         waitTillApplicationPodStarts("deploymentType", "deployOnce");
-        TimeUnit.SECONDS.sleep(20);
+        TimeUnit.SECONDS.sleep(5);
         assertApplication(false);
 
         openShiftClient.configMaps().inNamespace(testsuiteNamespace).withName(TESTSUITE_CONFIGMAP_NAME).delete();
@@ -88,7 +88,7 @@ public class SpringbootConfigmapBoosterIT extends BaseBoosterIT {
         else
             waitTillApplicationPodStarts();
         // Wait for Services, Route, ConfigMaps to refresh according to the deployment.
-        TimeUnit.SECONDS.sleep(20);
+        TimeUnit.SECONDS.sleep(5);
     }
 
     private void assertApplication(boolean bIsRedeployed) throws Exception {

@@ -352,11 +352,11 @@ public class BaseBoosterIT {
                 logger.info("waitTillApplicationPodStarts() -> Pod : " + pod.getMetadata().getName() + ", isReady : " + KubernetesHelper.isPodReady(pod));
                 if (KubernetesHelper.isPodReady(pod)) {
                     logger.info("OK ✓ ... Pod wait over.");
-                    TimeUnit.SECONDS.sleep(10);
+                    TimeUnit.SECONDS.sleep(5);
                     return;
                 }
             }
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(3);
             nPolls++;
         }
         throw new AssertionError("Pod wait timeout! Could not find application pod for " + testsuiteRepositoryArtifactId);
@@ -380,8 +380,8 @@ public class BaseBoosterIT {
         while (nPolls < 120) {
             PodList podList = openShiftClient.pods().withLabel("app", testsuiteRepositoryArtifactId).list();
             for (Pod pod : podList.getItems()) {
-//                logger.info("waitTillApplicationPodStarts(" + key + ", " + value + ") -> Pod : "
-//                        + pod.getMetadata().getName() + ", STATUS : " + KubernetesHelper.getPodStatus(pod) + ", isPodReady : " + KubernetesHelper.isPodReady(pod));
+                logger.info("waitTillApplicationPodStarts(" + key + ", " + value + ") -> Pod : "
+                        + pod.getMetadata().getName() + ", STATUS : " + KubernetesHelper.getPodStatus(pod) + ", isPodReady : " + KubernetesHelper.isPodReady(pod));
 
                 if (pod.getMetadata().getAnnotations().containsKey(key)) {
                     logger.info(pod.getMetadata().getName() + " is redeployed pod.");
@@ -390,7 +390,7 @@ public class BaseBoosterIT {
                         && pod.getMetadata().getAnnotations().get(key).equalsIgnoreCase(value)
                         && KubernetesHelper.isPodReady(pod)) {
                     logger.info("OK ✓ ... Pod wait over.");
-                    TimeUnit.SECONDS.sleep(10);
+                    TimeUnit.SECONDS.sleep(5);
                     return;
                 }
             }

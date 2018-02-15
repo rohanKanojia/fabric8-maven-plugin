@@ -51,7 +51,7 @@ public class VertxHttpBoosterIT extends BaseBoosterIT {
 
         deploy(testRepository, EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL, EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE);
         waitTillApplicationPodStarts("deploymentType", "deployOnce");
-        TimeUnit.SECONDS.sleep(20);
+        TimeUnit.SECONDS.sleep(5);
         assertDeployment();
     }
 

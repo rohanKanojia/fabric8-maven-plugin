@@ -52,7 +52,7 @@ public class SpringbootCrudBoosterIT extends BaseBoosterIT {
 
         deploy(testRepository, EMBEDDED_MAVEN_FABRIC8_BUILD_GOAL, EMBEDDED_MAVEN_FABRIC8_BUILD_PROFILE);
         waitTillApplicationPodStarts("deploymentType", "deployOnce");
-        TimeUnit.SECONDS.sleep(20);
+        TimeUnit.SECONDS.sleep(5);
         assertApplication();
     }
 
@@ -90,7 +90,7 @@ public class SpringbootCrudBoosterIT extends BaseBoosterIT {
         else
             waitTillApplicationPodStarts();
         // Wait for Services, Route, ConfigMaps to refresh according to the deployment.
-        TimeUnit.SECONDS.sleep(20);
+        TimeUnit.SECONDS.sleep(5);
     }
 
     private void executeCRUDAssertions(Route applicationRoute) throws Exception {
