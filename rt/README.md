@@ -1,3 +1,4 @@
+# Fabric8 Maven Plugin Regression tests
 
 The core directory for fabric8-maven-plugin regression tests
 
@@ -24,7 +25,5 @@ root directory, for Travis setup which basically invokes a shell script
 , to spin of various versions of OpenShift for tests.
 
 == FUTURE WORK ==
-* Add Support for OpenShift v3.7.0: Right now these tests seem to be failing on OpenShift v3.7.0, so it would be nice if the related build issues get fixed.
-
-
-
+* Improve build time of these regression tests
+* Add support for newer stable Openshift versions
