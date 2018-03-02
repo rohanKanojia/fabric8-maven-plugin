@@ -1,6 +1,8 @@
 ## fabric8-maven-plugin
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.fabric8/fabric8-maven-plugin/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/io.fabric8/fabric8-maven-plugin/)
+[![Travis](https://secure.travis-ci.org/fabric8io/fabric8-maven-plugin.png)](http://travis-ci.org/fabric8io/fabric8-maven-plugin)
+[![Jenkins](https://jenkins.io/images/logos/jenkins/jenkins.svg)](https://ci.fabric8.io/job/fabric8-maven-plugin-pullreq/)
 [![Coverage](https://sonarqube.com/api/badges/measure?key=io.fabric8:fabric8-maven-plugin-build&metric=coverage)](https://sonarqube.com/dashboard?id=io.fabric8%3Afabric8-maven-plugin-build)
 [![Technical Debt](https://sonarqube.com/api/badges/measure?key=io.fabric8:fabric8-maven-plugin-build&metric=sqale_debt_ratio)](https://sonarqube.com/dashboard?id=io.fabric8%3Afabric8-maven-plugin-build)
 [![Dependency Status](https://dependencyci.com/github/fabric8io/fabric8-maven-plugin/badge)](https://dependencyci.com/github/fabric8io/fabric8-maven-plugin)
