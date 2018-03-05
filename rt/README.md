@@ -16,7 +16,7 @@ maven plugin, it would be a bit easier for the maintainers to find out
   or maybe by plain Kubernetes Client(asserting resources, labels etc)
 * Redeploy the application and re-test; to check redeployment scenario.
 
-== Travis CI Setup for regression-tests ==
+## Circle CI Setup for regression-tests
 These tests only run in a particular build profile( See rt/pom.xml).These
  are intended to run on each pull request. So we basically spin off a 
  live OpenShift cluster in order to test. See .travis.yml in project's 
@@ -24,6 +24,6 @@ root directory, for Travis setup which basically invokes a shell script
 (located in  ./rt/src/main/resources/scripts/prepare-test-environment.sh)
 , to spin of various versions of OpenShift for tests.
 
-== FUTURE WORK ==
+## Future Work
 * Improve build time of these regression tests
 * Add support for newer stable Openshift versions
