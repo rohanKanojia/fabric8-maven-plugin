@@ -210,7 +210,7 @@ public class ImageStreamService {
                 continue;
             }
 
-            // Iterate overall tags ang get the latest one by 'created' attribute
+            // Iterate overall tags and get the latest one by 'created' attribute
             TAG_EVENT_LIST:
             for (NamedTagEventList list : tags) {
                 List<TagEvent> items = list.getItems();
@@ -240,16 +240,18 @@ public class ImageStreamService {
     }
 
     private boolean isDate1AfterDate2(String date1, String date2) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
-        if(Strings.isNotBlank(date1) || Strings.isNotBlank(date2)) {
-            return false;
+        if(Strings.isNotBlank(date1) && Strings.isNotBlank(date2)) {
+
+            try {
+                return dateFormatter.parse(date1).compareTo(dateFormatter.parse(date2)) > 0;
+            } catch (ParseException e) {
+                log.error("date parsing error: " + e.getMessage(), e);
+                return false;
+            }
         }
-
-        try {
-            return dateFormatter.parse(date1).compareTo(dateFormatter.parse(date2)) > 0;
-        } catch (ParseException e) {
-            log.error("date parsing error: " + e.getMessage(), e);
+        else{
             return false;
         }
     }
