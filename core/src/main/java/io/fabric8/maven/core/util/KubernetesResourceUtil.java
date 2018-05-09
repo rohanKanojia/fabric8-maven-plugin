@@ -179,7 +179,13 @@ public class KubernetesResourceUtil {
         Map<String,Object> fragment = readAndEnrichFragment(apiVersions, file, appName);
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.convertValue(fragment, HasMetadata.class);
+            HasMetadata convertedResource;
+            if(fragment.get("kind").equals("DeploymentConfig")) {
+                convertedResource = mapper.convertValue(fragment, Deployment.class);
+            }
+            else
+                convertedResource =  mapper.convertValue(fragment, HasMetadata.class);
+            return convertedResource;
         } catch (ClassCastException exp) {
             throw new IllegalArgumentException(String.format("Resource fragment %s has an invalid syntax (%s)", file.getPath(), exp.getMessage()));
         }

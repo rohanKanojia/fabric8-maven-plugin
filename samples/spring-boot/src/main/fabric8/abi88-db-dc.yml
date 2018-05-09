@@ -1,0 +1,35 @@
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  spec:
+    template:
+      metadata:
+        labels:
+          component: db
+      spec:
+        containers:
+          # MySql image
+        - name: "db"
+          image: "mysql:5"
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: secret
+          - name: MYSQL_DATABASE
+            value: abi88
+          ports:
+          - containerPort: 3306
+          volumeMounts:
+          - mountPath: "/var/lib/mysql"
+            name: "mysql"
+            subPath: "mysql"
+          resources:
+            limits:
+              memory: 200Mi
+        volumes:
+        - name: mysql
+          persistentVolumeClaim:
+            claimName: abi88
+        triggers:
+        - type: ConfigChange
