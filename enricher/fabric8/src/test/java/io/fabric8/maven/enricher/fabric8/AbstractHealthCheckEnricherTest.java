@@ -13,7 +13,7 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package io.fabric8.maven.enricher.api;
+package io.fabric8.maven.enricher.fabric8;
 
 import io.fabric8.kubernetes.api.builder.TypedVisitor;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -21,13 +21,14 @@ import io.fabric8.kubernetes.api.model.KubernetesListBuilder;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.maven.docker.util.Logger;
-import io.fabric8.maven.enricher.fabric8.AbstractHealthCheckEnricher;
+import io.fabric8.maven.enricher.api.EnricherContext;
+import io.fabric8.maven.enricher.api.MavenEnricherContext;
 import mockit.Mocked;
-import mockit.integration.junit4.JMockit;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,7 +39,6 @@ import static org.junit.Assert.*;
  *
  * @author Nicola
  */
-@RunWith(JMockit.class)
 public class AbstractHealthCheckEnricherTest {
 
     @Mocked
@@ -60,7 +60,7 @@ public class AbstractHealthCheckEnricherTest {
                     .endSpec()
                 .endDeploymentItem();
 
-        createEnricher(new Properties()).addMissingResources(list);
+        createEnricher(new Properties(), Collections.emptyMap()).addMissingResources(list);
 
         final AtomicInteger containerFound = new AtomicInteger(0);
         list.accept(new TypedVisitor<ContainerBuilder>() {
@@ -85,10 +85,6 @@ public class AbstractHealthCheckEnricherTest {
                                 .addNewContainer()
                                     .withName("app")
                                     .withImage("app:latest")
-                                    .addNewEnv()
-                                        .withName("FABRIC8_GENERATED")
-                                        .withValue("true")
-                                    .endEnv()
                                 .endContainer()
                                 .addNewContainer()
                                     .withName("sidecar")
@@ -99,7 +95,7 @@ public class AbstractHealthCheckEnricherTest {
                     .endSpec()
                 .endDeploymentItem();
 
-        createEnricher(new Properties()).addMissingResources(list);
+        createEnricher(new Properties(), Collections.singletonMap("FABRIC8_GENERATED_CONTAINERS", "app")).addMissingResources(list);
 
         final AtomicInteger containerFound = new AtomicInteger(0);
         list.accept(new TypedVisitor<ContainerBuilder>() {
@@ -122,9 +118,8 @@ public class AbstractHealthCheckEnricherTest {
 
     @Test
     public void enrichSpecificContainers() {
-
         final Properties properties = new Properties();
-        properties.put("fabric8.enricher.basic.enrichContainers", "app2,app3");
+        properties.put(AbstractHealthCheckEnricher.ENRICH_CONTAINERS, "app2,app3");
 
         KubernetesListBuilder list = new KubernetesListBuilder()
                 .addNewDeploymentItem()
@@ -134,10 +129,6 @@ public class AbstractHealthCheckEnricherTest {
                                 .addNewContainer()
                                     .withName("app")
                                     .withImage("app:latest")
-                                    .addNewEnv()
-                                        .withName("FABRIC8_GENERATED")
-                                        .withValue("true")
-                                    .endEnv()
                                 .endContainer()
                                 .addNewContainer()
                                     .withName("app2")
@@ -152,7 +143,7 @@ public class AbstractHealthCheckEnricherTest {
                     .endSpec()
                 .endDeploymentItem();
 
-        createEnricher(properties).addMissingResources(list);
+        createEnricher(properties, Collections.emptyMap()).addMissingResources(list);
 
         final AtomicInteger containerFound = new AtomicInteger(0);
         list.accept(new TypedVisitor<ContainerBuilder>() {
@@ -179,9 +170,8 @@ public class AbstractHealthCheckEnricherTest {
 
     @Test
     public void enrichAllContainers() {
-
         final Properties properties = new Properties();
-        properties.put("fabric8.enricher.basic.enrichAllContainers", "true");
+        properties.put(AbstractHealthCheckEnricher.ENRICH_ALL_CONTAINERS, "true");
 
         KubernetesListBuilder list = new KubernetesListBuilder()
                 .addNewDeploymentItem()
@@ -191,10 +181,6 @@ public class AbstractHealthCheckEnricherTest {
                                 .addNewContainer()
                                     .withName("app")
                                     .withImage("app:latest")
-                                    .addNewEnv()
-                                        .withName("FABRIC8_GENERATED")
-                                        .withValue("true")
-                                    .endEnv()
                                 .endContainer()
                                 .addNewContainer()
                                     .withName("app2")
@@ -205,7 +191,7 @@ public class AbstractHealthCheckEnricherTest {
                     .endSpec()
                 .endDeploymentItem();
 
-        createEnricher(properties).addMissingResources(list);
+        createEnricher(properties, Collections.emptyMap()).addMissingResources(list);
 
         final AtomicInteger containerFound = new AtomicInteger(0);
         list.accept(new TypedVisitor<ContainerBuilder>() {
@@ -226,15 +212,18 @@ public class AbstractHealthCheckEnricherTest {
         assertEquals(2, containerFound.get());
     }
 
-    protected AbstractHealthCheckEnricher createEnricher(Properties properties) {
+    protected AbstractHealthCheckEnricher createEnricher(Properties properties, Map<String, String> pi) {
 
         MavenProject project = new MavenProject();
         project.getProperties().putAll(properties);
 
-        EnricherContext context = new MavenEnricherContext.Builder()
+        MavenEnricherContext.Builder enricherContextBuilder = new MavenEnricherContext.Builder()
                 .project(project)
-                .log(log)
-                .build();
+                .log(log);
+        if(pi != null && !pi.isEmpty()) {
+            enricherContextBuilder.processingInstructions(pi);
+        }
+        EnricherContext context = enricherContextBuilder.build();
 
         AbstractHealthCheckEnricher enricher = new AbstractHealthCheckEnricher(context, "basic") {
             @Override
