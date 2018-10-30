@@ -60,6 +60,7 @@
     - fmp-revision-history
     - fmp-docker-registry-secret
     - fmp-triggers-annotation
+    - fmp-remove-container-env
 
   generator:
     # The order given in "includes" is the order in which generators are called

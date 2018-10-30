@@ -76,3 +76,7 @@ io.fabric8.maven.enricher.standard.openshift.ExposeEnricher
 
 # Enhance a given controller with the configuration information presented in the plugin configuration.
 io.fabric8.maven.enricher.standard.ControllerViaPluginConfigurationEnricher
+
+# Removes FABRIC8-GENERATED environment variables from containers which were
+# injected for distinguishing containers
+io.fabric8.maven.enricher.standard.RemoveFabric8GeneratedContainerEnvEnricher

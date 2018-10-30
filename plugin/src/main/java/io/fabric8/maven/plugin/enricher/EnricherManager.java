@@ -35,7 +35,6 @@ import static io.fabric8.maven.plugin.enricher.EnricherManager.Extractor.ANNOTAT
 import static io.fabric8.maven.plugin.enricher.EnricherManager.Extractor.LABEL_EXTRACTOR;
 import static io.fabric8.maven.plugin.enricher.EnricherManager.Extractor.SELECTOR_EXTRACTOR;
 
-
 /**
  * @author roland
  * @since 08/04/16
@@ -166,12 +165,9 @@ public class EnricherManager {
      * @param builder builder to customize
      */
     private void adapt(final ProcessorConfig enricherConfig, final KubernetesListBuilder builder) {
-        loop(enricherConfig, new Function<Enricher, Void>() {
-            @Override
-            public Void apply(Enricher enricher) {
+        loop(enricherConfig, (Enricher enricher) -> {
                 enricher.adapt(builder);
                 return null;
-            }
         });
     }
 
