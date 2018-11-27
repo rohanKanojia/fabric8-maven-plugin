@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.gson.JsonObject;
 import io.fabric8.maven.core.config.ProcessorConfig;
 import io.fabric8.maven.core.config.ResourceConfig;
 import io.fabric8.maven.core.model.Configuration;
@@ -53,6 +54,8 @@ public class MavenEnricherContext implements EnricherContext {
     // overall configuration for the build
     private Configuration configuration;
 
+    private Map<String, String> processingInstruction;
+
     private MavenProject project;
     private Logger log;
 
@@ -64,6 +67,14 @@ public class MavenEnricherContext implements EnricherContext {
     @Override
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    public Map<String, String> getProcessingInstructions() {
+        return processingInstruction;
+    }
+
+    public void setProcessingInstructions(Map<String, String> instruction) {
+        this.processingInstruction = instruction;
     }
 
     @Override

@@ -15,16 +15,27 @@
  */
 package io.fabric8.maven.enricher.standard;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.fabric8.kubernetes.api.builder.TypedVisitor;
+import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.KubernetesListBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
+import io.fabric8.kubernetes.api.model.PodTemplateSpec;
+import io.fabric8.kubernetes.api.model.ReplicationController;
+import io.fabric8.kubernetes.api.model.apps.DaemonSet;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentFluent;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
+import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
+import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetFluent;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetSpec;
+import io.fabric8.kubernetes.api.model.batch.Job;
 import io.fabric8.maven.core.config.ResourceConfig;
 import io.fabric8.maven.core.handler.DaemonSetHandler;
 import io.fabric8.maven.core.handler.DeploymentHandler;
@@ -40,8 +51,11 @@ import io.fabric8.maven.docker.config.ImageConfiguration;
 import io.fabric8.maven.enricher.api.BaseEnricher;
 import io.fabric8.maven.enricher.api.MavenEnricherContext;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Enrich with controller if not already present.
@@ -112,25 +126,52 @@ public class DefaultControllerEnricher extends BaseEnricher {
                 String type = getConfig(Config.type);
                 if ("deployment".equalsIgnoreCase(type)) {
                     log.info("Adding a default Deployment");
-                    builder.addToDeploymentItems(deployHandler.getDeployment(config, images));
+                    Deployment deployment = deployHandler.getDeployment(config, images);
+                    builder.addToDeploymentItems(deployment);
+                    setProcessingInstruction(getContainersFromPodSpec(deployment.getSpec().getTemplate()));
                 } else if ("statefulSet".equalsIgnoreCase(type)) {
                     log.info("Adding a default StatefulSet");
-                    builder.addToStatefulSetItems(statefulSetHandler.getStatefulSet(config, images));
+                    StatefulSet statefulSet = statefulSetHandler.getStatefulSet(config, images);
+                    builder.addToStatefulSetItems(statefulSet);
+                    setProcessingInstruction(getContainersFromPodSpec(statefulSet.getSpec().getTemplate()));
                 } else if ("daemonSet".equalsIgnoreCase(type)) {
                     log.info("Adding a default DaemonSet");
-                    builder.addToDaemonSetItems(daemonSetHandler.getDaemonSet(config, images));
+                    DaemonSet daemonSet = daemonSetHandler.getDaemonSet(config, images);
+                    builder.addToDaemonSetItems(daemonSet);
+                    setProcessingInstruction(getContainersFromPodSpec(daemonSet.getSpec().getTemplate()));
                 } else if ("replicaSet".equalsIgnoreCase(type)) {
                     log.info("Adding a default ReplicaSet");
-                    builder.addToReplicaSetItems(rsHandler.getReplicaSet(config, images));
+                    ReplicaSet replicaSet = rsHandler.getReplicaSet(config, images);
+                    builder.addToReplicaSetItems(replicaSet);
+                    setProcessingInstruction(getContainersFromPodSpec(replicaSet.getSpec().getTemplate()));
                 } else if ("replicationController".equalsIgnoreCase(type)) {
                     log.info("Adding a default ReplicationController");
-                    builder.addToReplicationControllerItems(rcHandler.getReplicationController(config, images));
+                    ReplicationController replicationController = rcHandler.getReplicationController(config, images);
+                    builder.addToReplicationControllerItems(replicationController);
+                    setProcessingInstruction(getContainersFromPodSpec(replicationController.getSpec().getTemplate()));
                 } else if ("job".equalsIgnoreCase(type)) {
                     log.info("Adding a default Job");
-                    builder.addToJobItems(jobHandler.getJob(config, images));
+                    Job job = jobHandler.getJob(config, images);
+                    builder.addToJobItems(job);
+                    setProcessingInstruction(getContainersFromPodSpec(job.getSpec().getTemplate()));
                 }
             }
         }
+    }
+
+    private void setProcessingInstruction(List<String> containerNames) {
+        Map<String, String> pi = new HashMap<>();
+        if(enricherContext.getProcessingInstructions() != null) {
+            pi.putAll(enricherContext.getProcessingInstructions());
+        }
+        pi.put("FABRIC8_GENERATED_CONTAINERS", String.join(",", containerNames));
+        enricherContext.setProcessingInstructions(pi);
+    }
+
+    private List<String> getContainersFromPodSpec(PodTemplateSpec spec) {
+        List<String> containerNames = new ArrayList<>();
+        spec.getSpec().getContainers().forEach(container -> { containerNames.add(container.getName()); });
+        return containerNames;
     }
 
     static {
