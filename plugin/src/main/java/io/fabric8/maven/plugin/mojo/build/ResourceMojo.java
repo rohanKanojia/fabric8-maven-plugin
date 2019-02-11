@@ -38,6 +38,7 @@ import io.fabric8.maven.core.config.PlatformMode;
 import io.fabric8.maven.core.config.ProcessorConfig;
 import io.fabric8.maven.core.config.Profile;
 import io.fabric8.maven.core.config.ResourceConfig;
+import io.fabric8.maven.core.config.RuntimeMode;
 import io.fabric8.maven.core.config.SecretConfig;
 import io.fabric8.maven.core.config.ServiceConfig;
 import io.fabric8.maven.core.handler.HandlerHub;
@@ -84,12 +85,10 @@ import io.fabric8.maven.plugin.mojo.ResourceDirCreator;
 import io.fabric8.openshift.api.model.DeploymentConfig;
 import io.fabric8.openshift.api.model.Template;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -204,7 +203,7 @@ public class ResourceMojo extends AbstractFabric8Mojo {
      * an OpenShift build (with a Docker build against the OpenShift API server.
      */
     @Parameter(property = "fabric8.mode")
-    private PlatformMode mode = PlatformMode.DEFAULT;
+    private RuntimeMode mode = RuntimeMode.DEFAULT;
 
     /**
      * OpenShift build mode when an OpenShift build is performed.
@@ -316,7 +315,7 @@ public class ResourceMojo extends AbstractFabric8Mojo {
     // Access for creating OpenShift binary builds
     private ClusterAccess clusterAccess;
 
-    private PlatformMode platformMode;
+    private RuntimeMode platformMode;
 
     private OpenShiftDependencyResources openshiftDependencyResources;
     private OpenShiftOverrideResources openShiftOverrideResources;
@@ -439,18 +438,24 @@ public class ResourceMojo extends AbstractFabric8Mojo {
             resolvedImages = getResolvedImages(images, log);
             if (!skip && (!isPomProject() || hasFabric8Dir())) {
                 // Extract and generate resources which can be a mix of Kubernetes and OpenShift resources
-                KubernetesList resources = generateResources(resolvedImages, remoteResources);
-                // Adapt list to use OpenShift specific resource objects
-                KubernetesList openShiftResources = convertToOpenShiftResources(resources);
-                writeResources(openShiftResources, ResourceClassifier.OPENSHIFT, generateRoute);
-                File openShiftResourceDir = new File(this.targetDir, ResourceClassifier.OPENSHIFT.getValue());
-                validateIfRequired(openShiftResourceDir, ResourceClassifier.OPENSHIFT);
 
-                // Remove OpenShift specific stuff provided by fragments
-                KubernetesList kubernetesResources = convertToKubernetesResources(resources, openShiftResources);
-                writeResources(kubernetesResources, ResourceClassifier.KUBERNETES, generateRoute);
-                File kubernetesResourceDir = new File(this.targetDir, ResourceClassifier.KUBERNETES.getValue());
-                validateIfRequired(kubernetesResourceDir, ResourceClassifier.KUBERNETES);
+                KubernetesList resources = new KubernetesList();
+                for(PlatformMode platformMode : new PlatformMode[] { PlatformMode.kubernetes, PlatformMode.openshift }) {
+                    ResourceClassifier resourceClassifier = platformMode == PlatformMode.kubernetes ? ResourceClassifier.KUBERNETES
+                            : ResourceClassifier.OPENSHIFT;
+
+                    // Adapt list to use OpenShift specific resource objects
+                    resources = generateResources(platformMode, resolvedImages, remoteResources);
+                    writeResources(resources, resourceClassifier, generateRoute);
+                    File resourceDir = new File(this.targetDir, resourceClassifier.getValue());
+                    validateIfRequired(resourceDir, resourceClassifier);
+                }
+//                KubernetesList openShiftResources = convertToOpenShiftResources(resources);
+//                // Remove OpenShift specific stuff provided by fragments
+//                KubernetesList kubernetesResources = convertToKubernetesResources(resources, openShiftResources);
+//                writeResources(kubernetesResources, ResourceClassifier.KUBERNETES, generateRoute);
+//                File kubernetesResourceDir = new File(this.targetDir, ResourceClassifier.KUBERNETES.getValue());
+//                validateIfRequired(kubernetesResourceDir, ResourceClassifier.KUBERNETES);
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to generate fabric8 descriptor", e);
@@ -548,7 +553,7 @@ public class ResourceMojo extends AbstractFabric8Mojo {
     }
 
     private void lateInit() {
-        platformMode = clusterAccess.resolvePlatformMode(mode, log);
+        platformMode = clusterAccess.resolveRuntimeMode(mode, log);
         log.info("Running in [[B]]%s[[B]] mode", platformMode.getLabel());
 
         if (isOpenShiftMode()) {
@@ -677,36 +682,38 @@ public class ResourceMojo extends AbstractFabric8Mojo {
         return targetPlatform != null && "kubernetes".equalsIgnoreCase(targetPlatform);
     }
 
-    private KubernetesList generateResources(List<ImageConfiguration> images, File remoteResources)
+    private KubernetesList generateResources(PlatformMode platformMode, List<ImageConfiguration> images, File remoteResources)
         throws IOException, MojoExecutionException {
 
         // Manager for calling enrichers.
         openshiftDependencyResources = new OpenShiftDependencyResources(log);
 
-        loadOpenShiftOverrideResources();
+        loadOpenShiftOverrideResources(platformMode);
 
         MavenEnricherContext.Builder ctxBuilder = new MavenEnricherContext.Builder()
-            .project(project)
-            .session(session)
-            .config(extractEnricherConfig())
-            .resources(resources)
-            .images(resolvedImages)
-            .log(log)
-            .openshiftDependencyResources(openshiftDependencyResources);
+                .runtimeMode(mode)
+                .project(project)
+                .session(session)
+                .config(extractEnricherConfig())
+                .properties(project.getProperties())
+                .resources(resources)
+                .images(resolvedImages)
+                .log(log)
+                .openshiftDependencyResources(openshiftDependencyResources);
 
         EnricherManager enricherManager = new EnricherManager(resources, ctxBuilder.build(),
             MavenUtil.getCompileClasspathElementsIfRequested(project, useProjectClasspath));
 
         // Generate all resources from the main resource directory, configuration and enrich them accordingly
-        KubernetesListBuilder builder = generateAppResources(images, enricherManager, remoteResources);
+        KubernetesListBuilder builder = generateAppResources(platformMode, images, enricherManager, remoteResources);
 
         // Add resources found in subdirectories of resourceDir, with a certain profile
         // applied
-        addProfiledResourcesFromSubirectories(builder, realResourceDir, enricherManager);
+        addProfiledResourcesFromSubirectories(platformMode, builder, realResourceDir, enricherManager);
         return builder.build();
     }
 
-    private void loadOpenShiftOverrideResources() throws MojoExecutionException, IOException {
+    private void loadOpenShiftOverrideResources(PlatformMode platformMode) throws MojoExecutionException, IOException {
         openShiftOverrideResources = new OpenShiftOverrideResources(log);
 
         if (realResourceDirOpenShiftOverride.isDirectory() && realResourceDirOpenShiftOverride.exists()) {
@@ -714,9 +721,10 @@ public class ResourceMojo extends AbstractFabric8Mojo {
             if (resourceFiles.length > 0) {
                 String defaultName = MavenUtil.createDefaultResourceName(project.getGroupId(), project.getArtifactId());
                 KubernetesListBuilder builder = KubernetesResourceUtil.readResourceFragmentsFrom(
-                    KubernetesResourceUtil.DEFAULT_RESOURCE_VERSIONING,
-                    defaultName,
-                    mavenFilterFiles(resourceFiles, this.workDirOpenShiftOverride));
+                        platformMode,
+                        KubernetesResourceUtil.DEFAULT_RESOURCE_VERSIONING,
+                        defaultName,
+                        mavenFilterFiles(resourceFiles, this.workDirOpenShiftOverride));
                 KubernetesList list = builder.build();
                 for (HasMetadata item : list.getItems()) {
                     openShiftOverrideResources.addOpenShiftOverride(item);
@@ -725,14 +733,9 @@ public class ResourceMojo extends AbstractFabric8Mojo {
         }
     }
 
-    private void addProfiledResourcesFromSubirectories(KubernetesListBuilder builder, File resourceDir,
+    private void addProfiledResourcesFromSubirectories(PlatformMode platformMode, KubernetesListBuilder builder, File resourceDir,
         EnricherManager enricherManager) throws IOException, MojoExecutionException {
-        File[] profileDirs = resourceDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory();
-            }
-        });
+        File[] profileDirs = resourceDir.listFiles((File pathname) -> pathname.isDirectory());
         if (profileDirs != null) {
             for (File profileDir : profileDirs) {
                 Profile profile = ProfileUtil.findProfile(profileDir.getName(), resourceDir);
@@ -745,9 +748,9 @@ public class ResourceMojo extends AbstractFabric8Mojo {
                 ProcessorConfig enricherConfig = profile.getEnricherConfig();
                 File[] resourceFiles = KubernetesResourceUtil.listResourceFragments(profileDir);
                 if (resourceFiles.length > 0) {
-                    KubernetesListBuilder profileBuilder = readResourceFragments(resourceFiles);
-                    enricherManager.createDefaultResources(enricherConfig, profileBuilder);
-                    enricherManager.enrich(enricherConfig, profileBuilder);
+                    KubernetesListBuilder profileBuilder = readResourceFragments(platformMode, resourceFiles);
+                    enricherManager.createDefaultResources(platformMode, enricherConfig, profileBuilder);
+                    enricherManager.enrich(platformMode, enricherConfig, profileBuilder);
                     KubernetesList profileItems = profileBuilder.build();
                     for (HasMetadata item : profileItems.getItems()) {
                         builder.addToItems(item);
@@ -757,28 +760,11 @@ public class ResourceMojo extends AbstractFabric8Mojo {
         }
     }
 
-    private KubernetesListBuilder generateAppResources(List<ImageConfiguration> images, EnricherManager enricherManager,
+    private KubernetesListBuilder generateAppResources(PlatformMode platformMode, List<ImageConfiguration> images, EnricherManager enricherManager,
         File remoteResources)
         throws IOException, MojoExecutionException {
         try {
-
-            File[] resourceFiles = KubernetesResourceUtil.listResourceFragments(realResourceDir);
-            if (remoteResources != null && remoteResources.isDirectory()) {
-                final File[] remoteFragments = remoteResources.listFiles();
-                resourceFiles = ArrayUtils.addAll(resourceFiles, remoteFragments);
-            }
-            KubernetesListBuilder builder;
-
-            // Add resource files found in the fabric8 directory
-            if (resourceFiles != null && resourceFiles.length > 0) {
-                if (resourceFiles != null && resourceFiles.length > 0) {
-                    log.info("using resource templates from %s", realResourceDir);
-                }
-
-                builder = readResourceFragments(resourceFiles);
-            } else {
-                builder = new KubernetesListBuilder();
-            }
+            KubernetesListBuilder builder = processResourceFragments(platformMode, remoteResources);
 
             // Add locally configured objects
             if (resources != null) {
@@ -787,10 +773,10 @@ public class ResourceMojo extends AbstractFabric8Mojo {
             }
 
             // Create default resources for app resources only
-            enricherManager.createDefaultResources(builder);
+            enricherManager.createDefaultResources(platformMode, builder);
 
             // Enrich descriptors
-            enricherManager.enrich(builder);
+            enricherManager.enrich(platformMode, builder);
 
             return builder;
         } catch (ConstraintViolationException e) {
@@ -800,10 +786,32 @@ public class ResourceMojo extends AbstractFabric8Mojo {
         }
     }
 
-    private KubernetesListBuilder readResourceFragments(File[] resourceFiles) throws IOException, MojoExecutionException {
+    private KubernetesListBuilder processResourceFragments(PlatformMode platformMode, File remoteResources) throws IOException, MojoExecutionException {
+        File[] resourceFiles = KubernetesResourceUtil.listResourceFragments(realResourceDir);
+        if (remoteResources != null && remoteResources.isDirectory()) {
+            final File[] remoteFragments = remoteResources.listFiles();
+            resourceFiles = ArrayUtils.addAll(resourceFiles, remoteFragments);
+        }
+        KubernetesListBuilder builder;
+
+        // Add resource files found in the fabric8 directory
+        if (resourceFiles != null && resourceFiles.length > 0) {
+            if (resourceFiles != null && resourceFiles.length > 0) {
+                log.info("using resource templates from %s", realResourceDir);
+            }
+
+            builder = readResourceFragments(platformMode, resourceFiles);
+        } else {
+            builder = new KubernetesListBuilder();
+        }
+        return builder;
+    }
+
+    private KubernetesListBuilder readResourceFragments(PlatformMode platformMode, File[] resourceFiles) throws IOException, MojoExecutionException {
         KubernetesListBuilder builder;
         String defaultName = MavenUtil.createDefaultResourceName(project.getArtifactId());
         builder = KubernetesResourceUtil.readResourceFragmentsFrom(
+            platformMode,
             KubernetesResourceUtil.DEFAULT_RESOURCE_VERSIONING,
             defaultName,
             mavenFilterFiles(resourceFiles, this.workDir));

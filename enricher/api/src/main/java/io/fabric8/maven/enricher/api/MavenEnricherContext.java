@@ -20,10 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import io.fabric8.maven.core.config.ProcessorConfig;
 import io.fabric8.maven.core.config.ResourceConfig;
+import io.fabric8.maven.core.config.RuntimeMode;
 import io.fabric8.maven.core.model.Configuration;
 import io.fabric8.maven.core.model.Dependency;
 import io.fabric8.maven.core.model.GroupArtifactVersion;
@@ -58,6 +60,10 @@ public class MavenEnricherContext implements EnricherContext {
 
     private OpenShiftDependencyResources openshiftDependencyResources;
     private MavenSession session;
+
+    private RuntimeMode runtimeMode;
+
+    private Properties properties;
 
     private MavenEnricherContext() {}
 
@@ -127,6 +133,13 @@ public class MavenEnricherContext implements EnricherContext {
     }
 
 
+    public RuntimeMode getRuntimeMode() { return runtimeMode; }
+
+    public Object getProperty(String key) {
+        return properties.getProperty(key);
+    }
+
+    public Properties getProperties() { return properties; }
     // ========================================================================
     // Maven specific methods, only available after casting
     public MavenProject getProject() {
@@ -174,6 +187,16 @@ public class MavenEnricherContext implements EnricherContext {
 
         public Builder openshiftDependencyResources(OpenShiftDependencyResources openShiftDependencyResources) {
             ctx.openshiftDependencyResources = openShiftDependencyResources;
+            return this;
+        }
+
+        public Builder runtimeMode(RuntimeMode mode) {
+            ctx.runtimeMode = mode;
+            return this;
+        }
+
+        public Builder properties(Properties properties) {
+            ctx.properties = properties;
             return this;
         }
 
