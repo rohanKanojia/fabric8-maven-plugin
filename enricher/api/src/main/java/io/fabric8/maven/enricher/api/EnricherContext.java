@@ -18,11 +18,13 @@ package io.fabric8.maven.enricher.api;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
+import io.fabric8.maven.core.config.PlatformMode;
+import io.fabric8.maven.core.config.RuntimeMode;
 import io.fabric8.maven.core.model.Configuration;
 import io.fabric8.maven.core.model.Dependency;
 import io.fabric8.maven.core.model.GroupArtifactVersion;
-import io.fabric8.maven.core.util.OpenShiftDependencyResources;
 import io.fabric8.maven.docker.util.Logger;
 import io.fabric8.maven.enricher.api.util.ProjectClassLoaders;
 
@@ -109,8 +111,12 @@ public interface EnricherContext {
         return Optional.empty();
     }
 
-    // ===========================================================================================
-    // To be removed:
 
-    OpenShiftDependencyResources getOpenshiftDependencyResources();
+    PlatformMode getPlatformMode();
+
+    RuntimeMode getRuntimeMode();
+
+    Object getProperty(String key);
+
+    Properties getProperties();
 }

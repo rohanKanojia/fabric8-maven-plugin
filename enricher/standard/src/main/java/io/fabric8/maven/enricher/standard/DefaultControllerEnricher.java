@@ -21,13 +21,14 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.maven.core.config.PlatformMode;
 import io.fabric8.maven.core.config.ResourceConfig;
 import io.fabric8.maven.core.config.RuntimeMode;
-import io.fabric8.maven.core.handler.DaemonSetHandler;
 import io.fabric8.maven.core.handler.DeploymentHandler;
-import io.fabric8.maven.core.handler.HandlerHub;
-import io.fabric8.maven.core.handler.JobHandler;
-import io.fabric8.maven.core.handler.ReplicaSetHandler;
+import io.fabric8.maven.core.handler.DeploymentConfigHandler;
 import io.fabric8.maven.core.handler.ReplicationControllerHandler;
+import io.fabric8.maven.core.handler.ReplicaSetHandler;
 import io.fabric8.maven.core.handler.StatefulSetHandler;
+import io.fabric8.maven.core.handler.DaemonSetHandler;
+import io.fabric8.maven.core.handler.JobHandler;
+import io.fabric8.maven.core.handler.HandlerHub;
 import io.fabric8.maven.core.util.Configs;
 import io.fabric8.maven.core.util.MavenUtil;
 import io.fabric8.maven.core.util.kubernetes.KubernetesResourceUtil;
@@ -63,6 +64,7 @@ public class DefaultControllerEnricher extends BaseEnricher {
     private final RuntimeMode runtimeMode;
 
     private final DeploymentHandler deployHandler;
+    private final DeploymentConfigHandler deployConfigHandler;
     private final ReplicationControllerHandler rcHandler;
     private final ReplicaSetHandler rsHandler;
     private final StatefulSetHandler statefulSetHandler;
@@ -88,6 +90,7 @@ public class DefaultControllerEnricher extends BaseEnricher {
         rcHandler = handlers.getReplicationControllerHandler();
         rsHandler = handlers.getReplicaSetHandler();
         deployHandler = handlers.getDeploymentHandler();
+        deployConfigHandler = handlers.getDeploymentConfigHandler();
         statefulSetHandler = handlers.getStatefulSetHandler();
         daemonSetHandler = handlers.getDaemonSetHandler();
         jobHandler = handlers.getJobHandler();
@@ -110,9 +113,14 @@ public class DefaultControllerEnricher extends BaseEnricher {
             // At least one image must be present, otherwise the resulting config will be invalid
             if (!images.isEmpty()) {
                 String type = getConfig(Config.type);
-                if ("deployment".equalsIgnoreCase(type)) {
-                    log.info("Adding a default Deployment");
-                    builder.addToDeploymentItems(deployHandler.getDeployment(config, images));
+                if ("deployment".equalsIgnoreCase(type) || "deploymentConfig".equalsIgnoreCase(type)) {
+                    if (platformMode == platformMode.kubernetes) {
+                        log.info("Adding a default Deployment");
+                        builder.addToDeploymentItems(deployHandler.getDeployment(config, images));
+                    } else {
+                        log.info("Adding a default DeploymentConfig");
+                        builder.addToDeploymentConfigItems(deployConfigHandler.getDeploymentConfig(config, images, getOpenshiftDeployTimeoutInSeconds(3600L),runtimeMode, isAutomaticTriggerEnabled(true)));
+                    }
                 } else if ("statefulSet".equalsIgnoreCase(type)) {
                     log.info("Adding a default StatefulSet");
                     builder.addToStatefulSetItems(statefulSetHandler.getStatefulSet(config, images));
@@ -193,20 +201,28 @@ public class DefaultControllerEnricher extends BaseEnricher {
      * This method overrides the ImagePullPolicy value by the value provided in
      * XML config.
      *
-     * @param xmlResourceConfig
+     * @param resourceConfig
      * @param defaultValue
      * @return
      */
-    private String getImagePullPolicy(ResourceConfig xmlResourceConfig, String defaultValue) {
-        if(xmlResourceConfig != null) {
-            return xmlResourceConfig.getImagePullPolicy() != null ? xmlResourceConfig.getImagePullPolicy() : defaultValue;
+    private String getImagePullPolicy(ResourceConfig resourceConfig, String defaultValue) {
+        if(resourceConfig != null) {
+            return resourceConfig.getImagePullPolicy() != null ? resourceConfig.getImagePullPolicy() : defaultValue;
         }
         return defaultValue;
     }
 
     private Boolean isAutomaticTriggerEnabled(Boolean defaultValue) {
-        if(((MavenEnricherContext)getContext()).getProperty("fabric8.openshift.enableAutomaticTrigger") != null) {
-            return Boolean.parseBoolean(((MavenEnricherContext) getContext()).getProperty("fabric8.openshift.enableAutomaticTrigger").toString());
+        if(getContext().getProperty("fabric8.openshift.enableAutomaticTrigger") != null) {
+            return Boolean.parseBoolean(getContext().getProperty("fabric8.openshift.enableAutomaticTrigger").toString());
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private Long getOpenshiftDeployTimeoutInSeconds(Long defaultValue) {
+        if (getContext().getProperty("fabric8.openshift.deployTimeoutSeconds") != null) {
+            return Long.parseLong(getContext().getProperty("fabric8.openshift.deployTimeoutSeconds").toString());
         } else {
             return defaultValue;
         }
