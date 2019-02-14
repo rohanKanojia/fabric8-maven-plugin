@@ -19,6 +19,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
+import io.fabric8.maven.core.config.PlatformMode;
+import io.fabric8.maven.core.config.RuntimeMode;
 import io.fabric8.maven.core.model.Configuration;
 import io.fabric8.maven.core.model.Dependency;
 import io.fabric8.maven.core.model.GroupArtifactVersion;
@@ -113,4 +115,8 @@ public interface EnricherContext {
     // To be removed:
 
     OpenShiftDependencyResources getOpenshiftDependencyResources();
+
+    PlatformMode getPlatformMode();
+
+    RuntimeMode getRuntimeMode();
 }

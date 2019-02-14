@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import io.fabric8.maven.core.config.PlatformMode;
 import io.fabric8.maven.core.config.ProcessorConfig;
 import io.fabric8.maven.core.config.ResourceConfig;
 import io.fabric8.maven.core.config.RuntimeMode;
@@ -63,6 +64,8 @@ public class MavenEnricherContext implements EnricherContext {
 
     private RuntimeMode runtimeMode;
 
+    private PlatformMode platformMode;
+
     private Properties properties;
 
     private MavenEnricherContext() {}
@@ -78,6 +81,9 @@ public class MavenEnricherContext implements EnricherContext {
     }
 
 
+    public PlatformMode getPlatformMode() {
+        return platformMode;
+    }
     @Override
     public OpenShiftDependencyResources getOpenshiftDependencyResources() {
         return openshiftDependencyResources;
@@ -132,7 +138,7 @@ public class MavenEnricherContext implements EnricherContext {
         );
     }
 
-
+    @Override
     public RuntimeMode getRuntimeMode() { return runtimeMode; }
 
     public Object getProperty(String key) {
@@ -197,6 +203,12 @@ public class MavenEnricherContext implements EnricherContext {
 
         public Builder properties(Properties properties) {
             ctx.properties = properties;
+            return this;
+        }
+
+
+        public Builder platformMode(PlatformMode platformMode) {
+            ctx.platformMode = platformMode;
             return this;
         }
 

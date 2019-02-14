@@ -315,7 +315,7 @@ public class ResourceMojo extends AbstractFabric8Mojo {
     // Access for creating OpenShift binary builds
     private ClusterAccess clusterAccess;
 
-    private RuntimeMode platformMode;
+    private RuntimeMode runtimeMode;
 
     private OpenShiftDependencyResources openshiftDependencyResources;
     private OpenShiftOverrideResources openShiftOverrideResources;
@@ -553,8 +553,8 @@ public class ResourceMojo extends AbstractFabric8Mojo {
     }
 
     private void lateInit() {
-        platformMode = clusterAccess.resolveRuntimeMode(mode, log);
-        log.info("Running in [[B]]%s[[B]] mode", platformMode.getLabel());
+        runtimeMode = clusterAccess.resolveRuntimeMode(mode, log);
+        log.info("Running in [[B]]%s[[B]] mode", runtimeMode.getLabel());
 
         if (isOpenShiftMode()) {
             Properties properties = project.getProperties();
@@ -564,14 +564,14 @@ public class ResourceMojo extends AbstractFabric8Mojo {
                 properties.setProperty(DOCKER_IMAGE_USER, namespace);
             }
             if (!properties.contains(PlatformMode.FABRIC8_EFFECTIVE_PLATFORM_MODE)) {
-                properties.setProperty(PlatformMode.FABRIC8_EFFECTIVE_PLATFORM_MODE, platformMode.toString());
+                properties.setProperty(PlatformMode.FABRIC8_EFFECTIVE_PLATFORM_MODE, runtimeMode.toString());
             }
         }
 
         openShiftConverters = new HashMap<>();
         openShiftConverters.put("ReplicaSet", new ReplicSetOpenShiftConverter());
         openShiftConverters.put("Deployment",
-            new DeploymentOpenShiftConverter(platformMode, getOpenshiftDeployTimeoutSeconds()));
+            new DeploymentOpenShiftConverter(runtimeMode, getOpenshiftDeployTimeoutSeconds()));
         // TODO : This converter shouldn't be here. See its javadoc.
         openShiftConverters.put("DeploymentConfig",
             new DeploymentConfigOpenShiftConverter(getOpenshiftDeployTimeoutSeconds()));
@@ -583,16 +583,16 @@ public class ResourceMojo extends AbstractFabric8Mojo {
     }
 
     private boolean isOpenShiftMode() {
-        return platformMode.equals(PlatformMode.openshift);
+        return runtimeMode.equals(RuntimeMode.openshift);
     }
-
+/*
     private KubernetesList convertToKubernetesResources(KubernetesList resources, KubernetesList openShiftResources)
         throws MojoExecutionException {
         KubernetesList kubernetesResources = removeOpenShiftObjects(resources);
         KubernetesList kubernetesList = processOpenshiftTemplateIfProvided(openShiftResources, kubernetesResources);
         return kubernetesList;
     }
-
+*/
     private KubernetesList processOpenshiftTemplateIfProvided(KubernetesList openShiftResources,
         KubernetesList kubernetesResources) throws MojoExecutionException {
         Template template = getSingletonTemplate(openShiftResources);
@@ -648,7 +648,7 @@ public class ResourceMojo extends AbstractFabric8Mojo {
     public void setOpenshiftDeployTimeoutSeconds(Long openshiftDeployTimeoutSeconds) {
         this.openshiftDeployTimeoutSeconds = openshiftDeployTimeoutSeconds;
     }
-
+/*
     private KubernetesList removeOpenShiftObjects(KubernetesList list) {
         KubernetesListBuilder ret = new KubernetesListBuilder();
         ret.withMetadata(list.getMetadata());
@@ -662,7 +662,7 @@ public class ResourceMojo extends AbstractFabric8Mojo {
         }
         return ret.build();
     }
-
+*/
     private boolean isOpenshiftItem(HasMetadata item) {
         if (isTargetPlatformOpenShift(item)) {
             return true;
@@ -773,6 +773,7 @@ public class ResourceMojo extends AbstractFabric8Mojo {
             }
 
             // Create default resources for app resources only
+
             enricherManager.createDefaultResources(platformMode, builder);
 
             // Enrich descriptors
