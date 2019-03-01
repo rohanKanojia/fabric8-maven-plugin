@@ -53,28 +53,24 @@ public abstract class AbstractHealthCheckEnricher extends BaseEnricher {
     }
 
     @Override
-    public void create(PlatformMode platformMode, KubernetesListBuilder builder) {
-
-        builder.accept(new TypedVisitor<ContainerBuilder>() {
-            @Override
-            public void visit(ContainerBuilder container) {
-                if (!container.hasReadinessProbe()) {
-                    Probe probe = getReadinessProbe(container);
-                    if (probe != null) {
-                        log.info("Adding readiness " + describe(probe));
-                        container.withReadinessProbe(probe);
-                    }
-                }
-
-                if (!container.hasLivenessProbe()) {
-                    Probe probe = getLivenessProbe(container);
-                    if (probe != null) {
-                        log.info("Adding liveness " + describe(probe));
-                        container.withLivenessProbe(probe);
-                    }
+    public void enrich(PlatformMode platformMode, KubernetesListBuilder builder) {
+        for(ContainerBuilder container : getContainersToEnrich(builder)) {
+            if (!container.hasReadinessProbe()) {
+                Probe probe = getReadinessProbe(container);
+                if (probe != null) {
+                    log.info("Adding readiness " + describe(probe));
+                    container.withReadinessProbe(probe);
                 }
             }
-        });
+
+            if (!container.hasLivenessProbe()) {
+                Probe probe = getLivenessProbe(container);
+                if (probe != null) {
+                    log.info("Adding liveness " + describe(probe));
+                    container.withLivenessProbe(probe);
+                }
+            }
+        }
     }
 
     private String describe(Probe probe) {

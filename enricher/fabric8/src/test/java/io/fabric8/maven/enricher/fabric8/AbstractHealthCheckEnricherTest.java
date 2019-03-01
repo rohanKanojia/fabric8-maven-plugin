@@ -20,6 +20,7 @@ import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.KubernetesListBuilder;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
+import io.fabric8.maven.core.config.PlatformMode;
 import io.fabric8.maven.docker.util.Logger;
 import io.fabric8.maven.enricher.api.EnricherContext;
 import io.fabric8.maven.enricher.api.MavenEnricherContext;
@@ -60,7 +61,7 @@ public class AbstractHealthCheckEnricherTest {
                     .endSpec()
                 .endDeploymentItem();
 
-        createEnricher(new Properties(), Collections.emptyMap()).addMissingResources(list);
+        createEnricher(new Properties(), Collections.emptyMap()).enrich(PlatformMode.kubernetes, list);
 
         final AtomicInteger containerFound = new AtomicInteger(0);
         list.accept(new TypedVisitor<ContainerBuilder>() {
@@ -95,7 +96,7 @@ public class AbstractHealthCheckEnricherTest {
                     .endSpec()
                 .endDeploymentItem();
 
-        createEnricher(new Properties(), Collections.singletonMap("FABRIC8_GENERATED_CONTAINERS", "app")).addMissingResources(list);
+        createEnricher(new Properties(), Collections.singletonMap("FABRIC8_GENERATED_CONTAINERS", "app")).enrich(PlatformMode.kubernetes, list);
 
         final AtomicInteger containerFound = new AtomicInteger(0);
         list.accept(new TypedVisitor<ContainerBuilder>() {
@@ -143,7 +144,7 @@ public class AbstractHealthCheckEnricherTest {
                     .endSpec()
                 .endDeploymentItem();
 
-        createEnricher(properties, Collections.emptyMap()).addMissingResources(list);
+        createEnricher(properties, Collections.emptyMap()).enrich(PlatformMode.kubernetes,list);
 
         final AtomicInteger containerFound = new AtomicInteger(0);
         list.accept(new TypedVisitor<ContainerBuilder>() {
@@ -191,7 +192,7 @@ public class AbstractHealthCheckEnricherTest {
                     .endSpec()
                 .endDeploymentItem();
 
-        createEnricher(properties, Collections.emptyMap()).addMissingResources(list);
+        createEnricher(properties, Collections.emptyMap()).enrich(PlatformMode.kubernetes,list);
 
         final AtomicInteger containerFound = new AtomicInteger(0);
         list.accept(new TypedVisitor<ContainerBuilder>() {
