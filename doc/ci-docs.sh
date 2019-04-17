@@ -25,14 +25,18 @@ export MAVEN_OPTS="-Xmx3000m"
 mvn -B install -DskipTests=true
 cd doc
 mvn -B -Phtml,pdf package
+cd ..
 git clone -b gh-pages https://fabric8ci:$GH_TOKEN@github.com/fabric8io/fabric8-maven-plugin gh-pages
-cp -rv target/generated-docs/* gh-pages/
-cd gh-pages
+cd -
+cp -rv target/generated-docs/* ../gh-pages/
+cd ../gh-pages
 mv index.pdf fabric8-maven-plugin.pdf
 git add --ignore-errors *
 git commit -m "generated documentation"
 git remote rm origin
 git remote add origin https://fabric8ci:$GH_TOKEN@github.com/fabric8io/fabric8-maven-plugin
+echo "Pushing to repository"
 git push origin gh-pages
+echo "Successfully pushed
 cd ..
-rm -rf gh-pages target
+rm -rf gh-pages-final gh-pages
