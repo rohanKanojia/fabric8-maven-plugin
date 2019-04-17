@@ -31,6 +31,8 @@ cd gh-pages
 mv index.pdf fabric8-maven-plugin.pdf
 git add --ignore-errors *
 git commit -m "generated documentation"
+git remote rm origin
+git remote add origin https://fabric8ci:$GH_TOKEN@github.com/fabric8io/fabric8-maven-plugin
 git push origin gh-pages
 cd ..
 rm -rf gh-pages target
