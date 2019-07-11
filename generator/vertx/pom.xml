@@ -33,7 +33,7 @@
 
   <parent>
     <groupId>io.fabric8</groupId>
-    <artifactId>fabric8-maven-parent</artifactId>
+    <artifactId>fabric8-maven-plugin-parent</artifactId>
     <version>4.1-SNAPSHOT</version>
     <relativePath>../../parent/pom.xml</relativePath>
   </parent>
@@ -46,7 +46,7 @@
   <dependencies>
     <dependency>
       <groupId>io.fabric8</groupId>
-      <artifactId>fabric8-maven-generator-api</artifactId>
+      <artifactId>fabric8-maven-plugin-generator-api</artifactId>
     </dependency>
 
     <dependency>

@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.fabric8</groupId>
-  <artifactId>fabric8-maven-parent</artifactId>
+  <artifactId>fabric8-maven-plugin-parent</artifactId>
   <version>4.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
@@ -169,14 +169,14 @@
 
       <dependency>
         <groupId>io.fabric8</groupId>
-        <artifactId>fabric8-maven-core</artifactId>
+        <artifactId>fabric8-maven-plugin-core</artifactId>
         <version>${project.version}</version>
       </dependency>
 
       <!-- ## Enricher -->
       <dependency>
         <groupId>io.fabric8</groupId>
-        <artifactId>fabric8-maven-enricher-api</artifactId>
+        <artifactId>fabric8-maven-plugin-enricher-api</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -201,7 +201,7 @@
       <!-- ## Generator -->
       <dependency>
         <groupId>io.fabric8</groupId>
-        <artifactId>fabric8-maven-generator-api</artifactId>
+        <artifactId>fabric8-maven-plugin-generator-api</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -257,7 +257,7 @@
 
       <dependency>
         <groupId>io.fabric8</groupId>
-        <artifactId>fabric8-maven-watcher-api</artifactId>
+        <artifactId>fabric8-maven-plugin-watcher-api</artifactId>
         <version>${project.version}</version>
       </dependency>
 
